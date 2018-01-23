@@ -3,24 +3,26 @@ const listeners = {}
 
 const inputs = {}
 
-navigator.requestMIDIAccess().then(midiAccess => {
-  midiAccess.inputs.forEach((port, key) => {
-    inputs[key] = port
-    addListeners(port)
-  })
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess().then(midiAccess => {
+    midiAccess.inputs.forEach((port, key) => {
+      inputs[key] = port
+      addListeners(port)
+    })
 
-  midiAccess.onstatechange = function (e) {
-    switch (e.port.state) {
-      case 'disconnected':
-        delete inputs[e.port.id]
-        break
-      case 'connected':
-        inputs[e.port.id] = e.port
-        addListeners(e.port)
-        break
+    midiAccess.onstatechange = function (e) {
+      switch (e.port.state) {
+        case 'disconnected':
+          delete inputs[e.port.id]
+          break
+        case 'connected':
+          inputs[e.port.id] = e.port
+          addListeners(e.port)
+          break
+      }
     }
-  }
-})
+  })
+}
 
 function toNote (event) {
   return {

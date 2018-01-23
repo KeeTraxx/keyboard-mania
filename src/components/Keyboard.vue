@@ -1,7 +1,9 @@
 <template>
-  <div ref="container" @click="note(~~(Math.random() * 8))">
-    <input ref="fileinput" type="file">
-    <div v-if="hasMIDISupport()">MIDI-Keyboard support only in Chrome</div>
+  <div id="main" ref="container" @click="note(~~(Math.random() * 8))">
+    <div>
+      <input ref="fileinput" type="file">
+      <div v-if="!hasMIDISupport()">MIDI-Keyboard support only in Chrome</div>
+    </div>
   </div>
 </template>
 
@@ -203,7 +205,7 @@ export default {
       setTimeout(() => this.popMidi(++index), deltaTime / timeDivision * 250)
     },
     hasMIDISupport () {
-      return navigator.hasOwnProperty('requestMIDIAccess')
+      return navigator.requestMIDIAccess
     }
   }
 }
@@ -211,7 +213,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-div {
+div#main {
   position: fixed;
   top: 0;
   right: 0;
