@@ -13,6 +13,7 @@ import * as TWEEN from '@tweenjs/tween.js'
 import * as Stats from 'stats.js'
 import * as MIDIParser from 'midi-parser-js/src/midi-parser.js'
 import * as MIDIInput from '../lib/MidiInput'
+import * as InstrumentPlayer from '../lib/InstrumentPlayer'
 
 function noteData (note) {
   let octave = ~~(note / 12)
@@ -68,7 +69,7 @@ THREE.Cache.enabled = true
 
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 40)
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200)
 camera.position.x = 40
 camera.position.y = -55
 camera.position.z = 20
@@ -106,6 +107,14 @@ for (let octave = 4; octave < 8; octave++) {
   scene.add(group)
 }
 
+InstrumentPlayer.loadInstrument('bright_acoustic_piano')
+  .then(instrument => {
+    InstrumentPlayer.noteOn(44, 128)
+    setTimeout(() => {
+      InstrumentPlayer.noteOff(44)
+    }, 300)
+  })
+
 MIDIInput.on('noteOn', ev => {
   console.log(ev)
   let note = noteData(ev.note)
@@ -114,6 +123,8 @@ MIDIInput.on('noteOn', ev => {
     let mesh = lanes[note.position]
     mesh.material = basicBlue
   }
+
+  InstrumentPlayer.noteOn(note.note, ev.velocity)
 })
 
 MIDIInput.on('noteOff', ev => {
@@ -122,6 +133,8 @@ MIDIInput.on('noteOff', ev => {
     let mesh = lanes[note.position]
     mesh.material = basicGreen
   }
+
+  InstrumentPlayer.noteOff(note.note)
 })
 
 let midiData
@@ -160,7 +173,8 @@ export default {
       requestAnimationFrame(this.animate)
     },
     note (midiEvent) {
-      let box = new THREE.BoxGeometry(1, 0.2, 0.2)
+      console.log('spawn', midiEvent)
+      let box = new THREE.BoxGeometry(100, 100, 100)
       let mesh = new THREE.Mesh(box, midiEvent.isHalfTone ? basicGreen : basicBlue)
       mesh.position.x = midiEvent.position
       scene.add(mesh)
